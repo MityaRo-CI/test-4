@@ -1,0 +1,30 @@
+language: node_js
+node_js:
+- '6'
+addons:
+  apt:
+    sources:
+    - heroku
+    packages:
+    - heroku-toolbelt
+        
+install:
+- npm install
+
+script: true
+
+before_deploy:
+- cat .netrc >> $HOME/.netrc
+- chmod 0600 /home/travis/.netrc
+- heroku apps
+- heroku apps | grep -q ci-workshop-test-3-$TRAVIS_BRANCH || heroku apps:create ci-workshop-test-4-$TRAVIS_BRANCH
+- heroku git:remote -a ci-workshop-test-3-$TRAVIS_BRANCH
+
+deploy:
+  provider: heroku
+  api_key: a4e46c1f-9849-4199-abd3-0ba9744dacb1
+  app: ci-workshop-test-4-$TRAVIS_BRANCH
+  on: $TRAVIS_BRANCH
+  
+after_deploy:
+- ./node_modules/.bin/wdio wdio.conf || travis_terminate 1
